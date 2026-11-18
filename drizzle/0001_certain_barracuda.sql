@@ -1,0 +1,1 @@
+ALTER TABLE `provider_budget` ADD `last_at` integer DEFAULT 0 NOT NULL;

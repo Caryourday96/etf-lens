@@ -1,0 +1,12 @@
+diff --git a/sites/adeticket/index.html b/sites/adeticket/index.html
+index 6ca5ff3..8bf7703 100644
+--- a/sites/adeticket/index.html
++++ b/sites/adeticket/index.html
+@@ -45,6 +45,7 @@
+           <article><span>07 / ENERGY</span><h2>Hydro Compare</h2><p>Compare electricity bills, hourly and daily usage, and year-over-year costs. Import Green Button or CSV data, review figures against a PDF bill and choose your dashboard layout. Public browser-only use needs no sign-in; optional private cross-device copies require sign-in and an explicit save.</p><a href="https://energy.adeticket.com">Compare energy bills</a></article>
+           <article><span>08 / GAMES</span><h2>Pair Play</h2><p>A colourful memory game with three difficulty levels, solo challenges and two-player pass-and-play. Match pairs, track your score and beat your personal best. Free with no sign-in; records stay in your browser.</p><a href="https://adeticket.com/pairplay">Play Pair Play</a></article>
+           <article><span>09 / PRIVATE WORKSPACE</span><h2>Remote Desk</h2><p>Send tasks to a separate Codex worker on your PC, review progress and check account usage from your phone. Private access key required; the computer must stay online.</p><a href="https://adeticket-remote-desk.azurewebsites.net/">Open Remote Desk</a></article>
++          <article><span>10 / INVESTING</span><h2>ETF Lens</h2><p>Compare ETFs and split-share funds, actual trailing distributions, CAD/USD investment income and hypothetical fee projections. Owner sign-in is required; access is currently private.</p><a href="https://etf.adeticket.com">Open ETF Lens</a></article>
+         </div>
+       </section>
+     </main>

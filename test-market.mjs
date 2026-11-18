@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {normalizeMatches,normalizeFund,providerQuery} from './lib/market-data.mjs';
+import {normalizeYahoo} from './lib/yahoo-data.mjs';
+assert.deepEqual(normalizeMatches({bestMatches:[{'1. symbol':'FFN.TRT','2. name':'North American Financial 15','3. type':'Equity','8. currency':'CAD'},{'1. symbol':'XEQT.TRT','2. name':'iShares Core Equity Portfolio','3. type':'ETF','8. currency':'CAD'},{'1. symbol':'RY.TRT','2. name':'Royal Bank of Canada','3. type':'Equity','8. currency':'CAD'}]}).map(f=>[f.ticker,f.kind]),[['FFN.TO','Split-share fund'],['XEQT.TO','ETF']]);
+const fund=normalizeFund('VOO',{net_expense_ratio:'0.0003'},{'Global Quote':{'05. price':'100','07. latest trading day':'2026-11-17'}},{data:[{ex_dividend_date:'2026-06-01',amount:'2'},{ex_dividend_date:'2027-01-01',amount:'10'},{ex_dividend_date:'2024-01-01',amount:'10'}]},Date.parse('2026-11-18T12:00:00Z'));
+assert.equal(fund.fee,.03);assert.equal(fund.dividendYield,2);assert.equal(fund.priceDate,'2026-11-17');assert.equal(fund.annualDistribution,2);
+const absent=normalizeFund('XEQT.TRT',{}, {},{data:[]});assert.equal(absent.fee,null);assert.equal(absent.dividendYield,null);assert.equal(absent.price,null);
+let requests=0;const rows=new Map();let budget=0,last=0;
+const DB={prepare(sql){let args;return {bind(...values){args=values;return this;},async first(){if(sql.startsWith('SELECT payload'))return rows.get(args[0]);if(sql.startsWith('UPDATE provider_budget')){if(budget>=23||last>args[2])return null;budget++;last=args[0];return {requests:budget};}if(sql.startsWith('SELECT requests'))return {requests:budget};},async run(){if(sql.startsWith('INSERT INTO provider_cache'))rows.set(args[0],{payload:args[1],fetched_at:args[2]});}};}};
+const env={DB,ALPHA_VANTAGE_API_KEY:'test-secret'};
+const fetcher=async url=>{requests++;assert.equal(url.hostname,'www.alphavantage.co');return Response.json({bestMatches:[]});};
+await providerQuery(env,'SYMBOL_SEARCH',{keywords:'XEQT'},86400000,fetcher);const hit=await providerQuery(env,'SYMBOL_SEARCH',{keywords:'XEQT'},86400000,fetcher);assert(hit.cached);assert.equal(requests,1);
+budget=23;await assert.rejects(()=>providerQuery(env,'SYMBOL_SEARCH',{keywords:'VEQT'},86400000,fetcher),/allowance/);assert.equal(requests,1);
+await assert.rejects(()=>providerQuery({DB},'SYMBOL_SEARCH',{},1,fetcher),/API key/);
+console.log('PASS: split-share classification, Canadian ticker aliases, yield math/ex-date window, missing-data handling, cached requests, quota guard, and missing-key errors.');
+const yahoo=normalizeYahoo({chart:{result:[{meta:{symbol:'FFN.TO',currency:'CAD',regularMarketPrice:10,regularMarketTime:1794916800},events:{dividends:{one:{date:1780272000,amount:.12},two:{date:1782864000,amount:.12},old:{date:1700000000,amount:10}}}}]}},Date.parse('2026-11-18T12:00:00Z'));
+assert.equal(yahoo.annualDistribution,.24);assert.equal(yahoo.dividendYield,2.4);assert.equal(yahoo.lastDistribution.amount,.12);assert.equal(yahoo.dividendHistory.length,2);
+console.log('PASS: actual public-feed distributions, cutoff filtering, last payment, and yield conversion.');
