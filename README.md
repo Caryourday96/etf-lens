@@ -4,7 +4,7 @@ Adeticket fund comparison tool: ETFs and split-share funds, CAD/USD investment s
 
 Canonical URL: https://etf.adeticket.com
 
-Hosting: Azure App Service (`adeticket-etf-lens`) on the existing `adeticket` Linux plan in Canada Central. The production site is public and requires no login. Azure DNS hosts adeticket.com. The original private Sites deployment is retained as a fallback; it is not the canonical production host.
+Hosting: Azure App Service (`etf-lens-adeticket`) on the existing `fitness-linux-b1` Linux plan in Canada Central. The production site is public and requires no login. Azure DNS hosts adeticket.com. The original private Sites deployment is retained as a fallback; it is not the canonical production host.
 
 ## Data
 
