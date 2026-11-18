@@ -1,0 +1,35 @@
+name: Deploy ETF Lens to Azure
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: etf-lens-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          node check-dividends.cjs
+          node test-market.mjs
+          node prepare-azure.mjs
+          node --check outputs/azure/lib/api-market.mjs
+          (cd outputs/azure && zip -qr ../etf-lens.zip .)
+      - uses: azure/login@v2
+        with:
+          client-id: ae531e23-6a9b-4c6d-baaf-95114a62dc3c
+          tenant-id: eebc63f8-ba15-4204-b127-5b6c929e7c95
+          subscription-id: bd83bca5-9234-4923-b95f-0dc160ec962c
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: etf-lens-adeticket
+          package: outputs/etf-lens.zip
+      - run: curl --fail --retry 8 --retry-all-errors --retry-delay 5 https://etf-lens-adeticket.azurewebsites.net/health

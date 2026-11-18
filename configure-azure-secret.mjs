@@ -2,7 +2,7 @@ import {execFileSync} from 'node:child_process';
 process.stdin.setRawMode(true);process.stdin.setEncoding('utf8');process.stderr.write('Ready for API key on stdin (hidden).\n');
 const key=await new Promise(resolve=>{let value='';process.stdin.on('data',chunk=>{value+=chunk;if(/[\r\n]/.test(value)){process.stdin.setRawMode(false);process.stdin.pause();resolve(value.trim());}});});
 const token=execFileSync('cmd.exe',['/d','/s','/c','az account get-access-token --resource https://management.azure.com/ --query accessToken -o tsv'],{encoding:'utf8',windowsHide:true}).trim();
-const url='https://management.azure.com/subscriptions/bd83bca5-9234-4923-b95f-0dc160ec962c/resourceGroups/Kayode_IGO/providers/Microsoft.Web/sites/adeticket-etf-lens/config/appsettings';
+const url='https://management.azure.com/subscriptions/bd83bca5-9234-4923-b95f-0dc160ec962c/resourceGroups/Kayode_IGO/providers/Microsoft.Web/sites/etf-lens-adeticket/config/appsettings';
 const headers={Authorization:'Bearer '+token,'Content-Type':'application/json'};
 const existing=await fetch(url+'/list?api-version=2024-04-01',{method:'POST',headers});if(!existing.ok)throw Error('Could not read Azure settings');
 const settings=(await existing.json()).properties||{};
