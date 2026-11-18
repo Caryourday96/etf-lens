@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const els={};const defaults={initial:'10000',monthly:'250',years:'20',rate:'7',search:''};
+const el=id=>els[id]??=({value:defaults[id]??'',innerHTML:'',textContent:'',dataset:{},checkValidity:()=>true,replaceChildren(){},append(){}});
+let csvBlob;
+const ctx={document:{getElementById:el,createElement:()=>({click(){}})},localStorage:{getItem:()=>null,setItem(){}},Intl,console,Blob:class{constructor(parts){csvBlob=parts.join('');}},URL:{createObjectURL:()=>'',revokeObjectURL(){}},setTimeout:()=>{}};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync('dist/dividends.js','utf8'),ctx);vm.runInContext(fs.readFileSync('dist/app.js','utf8'),ctx);
+assert.equal(vm.runInContext('dividendEstimate(10000,2)',ctx),200);
+assert.equal(vm.runInContext('dividendEstimate(10000,0)',ctx),0);
+for(const t of ['VOO','QQQM','VXUS'])el('yield-'+t).value='2';
+vm.runInContext('updateDividendEstimates()',ctx);
+assert.equal(el('annual-VOO').textContent,'$200.00');assert.equal(el('monthly-VOO').textContent,'$16.67');
+el('initial').value='20000';vm.runInContext('plot()',ctx);assert.equal(el('annual-VOO').textContent,'$400.00');
+el('dividendCards').oninput({target:Object.assign(el('yield-VOO'),{value:'3',dataset:{yield:'VOO'}})});assert.equal(el('annual-VOO').textContent,'$600.00');
+el('export').onclick();assert(csvBlob.includes('Assumed dividend yield (%)'));assert(csvBlob.includes('600.00'));
+el('dividendCards').oninput({target:Object.assign(el('yield-VOO'),{value:'',dataset:{yield:'VOO'}})});assert.equal(el('annual-VOO').textContent,'—');assert.equal(vm.runInContext('dividendInputsValid()',ctx),false);
+assert.equal(vm.runInContext('balances({initial:10000,monthly:250,years:2,rate:0},0).at(-1)',ctx),16000);
+console.log('PASS: dividend math, zero yield, input updates, monthly equivalents, CSV fields, invalid yield, and existing contribution calculation.');
